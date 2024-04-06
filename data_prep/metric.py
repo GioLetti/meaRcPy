@@ -83,7 +83,7 @@ def cross_metrics(ground_truth:np.ndarray, # ground truth data
             plt.plot(tested_tau*int_time,error_[ch,:],marker='o',linestyle='--',color='blue',linewidth=0.5)
             plt.title(f'channel {ch_id}')
             plt.xlabel(f'{chr(964)} [ms]')
-            plt.ylabel('XRMSE')
+            plt.ylabel('R')
             plt.savefig(os.path.join(path_to_save,f'channel_{ch_id}_xrmse_vs_{chr(964)}.pdf'),bbox_inches='tight')
             plt.close()
 
