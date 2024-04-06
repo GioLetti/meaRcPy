@@ -1,0 +1,32 @@
+noise_syn: # noise generator synapse parameter
+  static_synapse:
+    weight: 1.0
+    delay: 0.1
+poisson_syn: # poisson generator synapse parameter
+  static_synapse:
+    weight: 14.25
+    delay: 0.1
+stimulation_syn: # step current generator synapse parameter
+  static_synapse:
+    weight: 1.0
+    delay: 0.1
+spike_recorder_syn: # spike recorder synapse parameter (these values must remain fix)
+  static_synapse:
+    weight: 1.0
+    delay: 1.0
+intra_population_syn: # intra population synapse parameter
+  stdp_synapse: 
+    tau_plus: 20
+    lambda: 0.1
+    mu_plus: 0.5
+    mu_minus: 0.5
+    Wmax: 20.
+inter_population_syn: # inter population synapse parameter
+  stdp_synapse:
+    tau_plus: 20
+    lambda: 0.1
+    mu_plus: 0.5
+    mu_minus: 0.5
+    Wmax: 20.
+    rule: fixed_outdegree
+    inter_conn_number: 3

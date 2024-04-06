@@ -1,0 +1,33 @@
+neuron_model: # in the following dictionary the neuron model parameters are specified
+  name: 'izhikevich' # the NEST name of the model that we want to use
+  params: # NEST model parameters
+    a: 0.02
+    b: 0.2
+    c: -65.
+    d: 8.
+neuron_number: 5 # The number of neuron in each population
+population_number: 8 # the number of populations
+stimulated_population: 3  # stimulated population (checks below for explanation)
+isolated_population: [4,4] # isolated population (checks below for explanation)
+full_inhibitory: ['pop_0','pop_6'] # full_inhibitory (checks below for description)
+
+
+# stimulated_population can be:
+#        - an integer (e.g 3) --> in this case three random population will be selected to be stimulated
+#        - a list (e.g ["pop_0","pop_1","pop_4"]) --> the specified population are going to be stimulated
+#        - a list composed by [3,["pop_2","pop_3"]] -- > a total of three population will be stimulated and among those two are the ones specified in the list
+#        - set to 0 to avoid stimulated population
+
+
+#isolated_population can be: 
+#        - an integer (e.g 3) --> three populations clusters will be randomly generated.
+#        - a list (e.g [3,4,5]) --> three clusters will be created with 3,4,5 populations in each, respectively.
+#        - a list of list (e.g [["pop_0","pop_1","pop_4"],["pop_2","pop_3"]]) --> two cluster will be generated and composed by the specified populations.
+#                                                                                  Remaining population (if present) will form another cluster
+#        - set to 0 to avoid isolated population
+
+# full_inhibitory can be:
+#        - an integer (e.g 3) --> in this case three random population will be selected to be fully inhibitory
+#        - a list (e.g ["pop_0","pop_1","pop_4"]) --> the specified population are going to be fully inhibitory
+#        - a list composed by [3,["pop_2","pop_3"]] -- > a total of three population will be fully inhibitory and among those two are the ones specified in the list
+#        - set to 0 to avoid fully inhibitory population

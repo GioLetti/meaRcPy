@@ -1,0 +1,12 @@
+noise_generator: # noise generator parameters dictionary
+  mean: 0.0 # mean expressed in pA
+  std: 3.0 # standard deviation expressed in pA
+poisson_generator: # poisson generator parameters dictionary
+  rate: 5.0 # spikes rate expressed as spikes/sec
+spike_recorder: None # spike recorder does not have any parameter
+step_current_generator:
+  background_time: 150000 # expressed in ms. It represents the lenght of the simulation in which only background activity will be present
+  stim_time: 10000 # expressed in ms. It represents the total duration of each stimulation phase
+  stim_num: 10 # number of stimulation in each stimulation phase
+  stim_lenght: 2 # expressed in ms. It represents the duration of actual stimulation (repeated for stim_num times) during each stimulation phase 
+  stim_amp: 30 # expressed in pA. 
