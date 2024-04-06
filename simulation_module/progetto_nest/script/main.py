@@ -1,6 +1,5 @@
-from parser_1 import retrieve_parameters
-from parser_1 import retrieve_params_debug
-import modello
+from parser import retrieve_parameters,retrieve_params_debug
+import mea_snn
 import copy
 
 #os.chdir('/home/giorgio/Desktop/progetto_nest/script')
@@ -12,7 +11,7 @@ def main():
     output_path,mea_layout_path,network_dict,device_dict,simulation_dict,synapse_dict = retrieve_parameters()
 
     # Create MEA model 
-    mea_model = modello.MEA_model(network_dict,simulation_dict,device_dict,synapse_dict,output_path,mea_layout_path)
+    mea_model = mea_snn.MEA_model(network_dict,simulation_dict,device_dict,synapse_dict,output_path,mea_layout_path)
 
     # set up NEST
     mea_model.setup_NEST()
