@@ -138,19 +138,35 @@ class analyzer():
         return merged_IBI
     
     def __calculate_IBIth(self,IBI:np.ndarray):
+
+        def plot_ibi_bar(count,bins,ibith=None):
+            plt.stairs(count,np.power(10,bins),facecolor=[0.,.02,.02,.44], edgecolor=[0., 0., 0., 0.98], linewidth=2,fill=True)
+            ax = plt.gca()
+            plt.xlabel('IBI [ms]')
+            ax.set_xscale('log')
+            
+            plt.ylabel('Density')
+            if ibith!=None:
+                
+                ax.scatter(ibith,count[list(bins).index(np.round(np.log10(ibith),1))],color='red',marker='*',linewidth=1.5,s=80,label='Estimated Int. Time')
+            #plt.title('Cumulative log-ISI distribution')
+            plt.legend(fontsize = 12)
+            plt.savefig(os.path.join(self.exp.results_path,'cumulative_ibi_histogram.pdf'),bbox_inches='tight')
+            plt.close()
+
         
         plt.close()
         #Histogram of logIBI
         histo_bins=np.round(np.arange(min(IBI),max(IBI),0.1),1) # the bins have fixed width of 0.1 
        
-        histogram=plt.hist(IBI,bins=histo_bins,density=True,facecolor = [.6,.4,.5,.5], edgecolor=[0., 0., 0., 1.], linewidth=2)
-        plt.xlabel('log-IBI')
+        histogram=plt.hist(IBI,bins=histo_bins,density=True,facecolor=[0.,.02,.02,.44], edgecolor=[0., 0., 0., 0.98], linewidth=2)
+        plt.xlabel('log-IBI [ms]')
         plt.ylabel('Density')
-        plt.title('Cumulative log-IBI distribution')
-        plt.savefig(os.path.join(self.exp.results_path,'cumulative_ibi_histogram.pdf'),bbox_inches='tight')
+        #plt.title('Cumulative log-IBI distribution')
+        plt.savefig(os.path.join(self.exp.results_path,'cumulative_log_ibi_histogram.pdf'),bbox_inches='tight')
         plt.close()
 
-    
+        
 
 
         binned_values=np.array(histogram[0])
@@ -189,16 +205,19 @@ class analyzer():
 
                 elif peak_x_value < np.log10(2): # if peak is less than 2 ms
                     found_flag = True
+                    plot_ibi_bar(histogram[0],histo_bins,2)
                     return 2 # IBIth expressed in ms
 
                 elif ((peak_x_value>= np.log10(2)) and (peak_x_value<1)):
                     found_flag = True
-                    return  round(10**(peak_x_value),1) # IBIth in millisecond
+                    ibith = round(10**(peak_x_value),1)
+                    plot_ibi_bar(histogram[0],histo_bins,ibith)
+                    return  ibith # IBIth in millisecond
 
             if found_flag == False:
-
+                
                 print('No IBI threshold could be found. Returning None.')
-
+                plot_ibi_bar(histogram[0],histo_bins,None)
                 return None
 
     def __calculate_merged_ISI(self,ch_data: np.ndarray) -> np.ndarray:
@@ -227,6 +246,21 @@ class analyzer():
         The function calculates the ISI threshold (ISIth) from 1D log ISI array
         '''
 
+        def plot_isi(counts,bins,isith=None):
+            tmp_hist = plt.stairs(counts,np.power(10,bins),facecolor=[0.,.02,.02,.44], edgecolor=[0., 0., 0., 0.98], linewidth=2,fill=True)
+            ax = plt.gca()
+            plt.xlabel('ISI [ms]')
+            ax.set_xscale('log')
+            
+            plt.ylabel('Density')
+            if isith!=None:
+                ax.scatter(isith,counts[list(bins).index(np.round(np.log10(isith),1))],color='red',marker='*',linewidth=1.5,s=80,label='ISIth')
+            #plt.title('Cumulative log-ISI distribution')
+            plt.legend(fontsize = 12)
+            plt.savefig(os.path.join(self.exp.results_path,'cumulative_isi_histogram.pdf'),bbox_inches='tight')
+            plt.close()
+        
+
         #Histogram of logISI 
         plt.close()
         try:
@@ -239,16 +273,16 @@ class analyzer():
         else:
             histo_bins=np.round(np.arange(min(ISI),max(ISI),0.1),1) # the bins have fixed width of 0.1 
         
-        histogram=plt.hist(ISI,bins=histo_bins,density=True,facecolor = [.6,.4,.5,.5], edgecolor=[0., 0., 0., 1.], linewidth=2)
         
-        plt.xlabel('log-ISI')
+        
+        histogram=plt.hist(ISI,bins=histo_bins,density=True,facecolor=[0.,.02,.02,.44], edgecolor=[0., 0., 0., 0.98], linewidth=2)
+        plt.xlabel('log-ISI [ms]')
         plt.ylabel('Density')
-        plt.title('Cumulative log-ISI distribution')
-        plt.savefig(os.path.join(self.exp.results_path,'cumulative_isi_histogram.pdf'),bbox_inches='tight')
+        plt.savefig(os.path.join(self.exp.results_path,'cumulative_log_isi_histogram.pdf'),bbox_inches='tight')
         plt.close()
         
+        
     
-
         binned_values=np.array(histogram[0])
 
         peaks,_ = find_peaks(binned_values) # peaks in ISI histogram
@@ -263,6 +297,8 @@ class analyzer():
             return 100 # ISI threshold expressed in millisecond
         
         elif len(peaks) ==1: # if only one peak is identified
+
+            plot_isi(histogram[0],histo_bins,10^(histo_bins[peaks] + peaks_width/2))
     
             return 10^(histo_bins[peaks] + peaks_width/2) # ISIth in ms
             
@@ -296,8 +332,10 @@ class analyzer():
             isith_idx = np.round(isith_idx,1)
 
             if isith_idx >= 2: # if the index is greater then 2, which correspond to 10^2 = 100 ms
+                 plot_isi(histogram[0],histo_bins,10^(2))
                  return 100 # ms
             else:
+                plot_isi(histogram[0],histo_bins,round(10**(isith_idx),2))
                 return  round(10**(isith_idx),2) # ISIth in millisecond
 
 
@@ -367,7 +405,112 @@ class analyzer():
         self.exp.set_param(name,param)
 
 
-    def calculate_isith(self,data:np.ndarray):
+    def plot_single_population_isi(self,idx:int,filt=False):
+        
+        if filt == False:
+            background = self.retrieve_data_exp('background')[0][idx]
+            channel_list = self.retrieve_data_exp('background')[1]
+
+            stimulation = self.retrieve_data_exp('stimulation')
+        else:
+            background = self.retrieve_data_exp('filt_background')[0][idx]
+            channel_list = self.retrieve_data_exp('filt_background')[1]
+
+            stimulation = self.retrieve_data_exp('filt_stimulation')
+
+        tmp_stim = []
+        for stim in stimulation:
+            tmp = stimulation[stim][1][idx]
+            tmp = tmp[~np.isnan(tmp)]
+            tmp_stim.append(tmp)
+
+        ch_data = np.concatenate((background,*tmp_stim))
+
+            
+            
+        ISI = np.diff(np.sort(ch_data[~np.isnan(ch_data)]*(1/self.retrieve_param_exp('sampling_fr')*1000)))
+        log_ISI = np.log10(ISI[ISI!=0])
+        channel_idx = channel_list[idx]
+
+        #Histogram of logISI 
+        plt.close()
+        try:
+            min_isi = min(log_ISI)
+
+        except:
+            min_isi = -2
+            histo_bins=np.round(np.arange(min_isi,max(log_ISI),0.1),1) # the bins have fixed width of 0.1 
+
+        else:
+            histo_bins=np.round(np.arange(min(log_ISI),max(log_ISI),0.1),1) # the bins have fixed width of 0.1 
+        
+        histogram=plt.hist(log_ISI,bins=histo_bins,density=True,facecolor=[0.,.02,.02,.44], edgecolor=[0., 0., 0., 0.98], linewidth=2)
+        plt.close()
+
+        tmp_hist = plt.stairs(histogram[0],np.power(10,histo_bins),facecolor=[0.,.02,.02,.44], edgecolor=[0., 0., 0., 0.98], linewidth=2,fill=True)
+        ax = plt.gca()
+        plt.xlabel('ISI [ms]')
+        ax.set_xscale('log')
+            
+        plt.ylabel('Density')
+        
+        plt.title(f'Channel {channel_idx}')
+        plt.savefig(os.path.join(self.exp.results_path,f'channel_{channel_idx}_isi_histogram.pdf'),bbox_inches='tight')
+        plt.close()
+
+    def raster_plot(self,start,stop,filt = False):
+
+        if filt == False:
+            background = self.retrieve_data_exp('background')[0]
+            channel_list = self.retrieve_data_exp('background')[1]
+
+            stimulation = self.retrieve_data_exp('stimulation')
+        else:
+            background = self.retrieve_data_exp('filt_background')[0]
+            channel_list = self.retrieve_data_exp('filt_background')[1]
+
+            stimulation = self.retrieve_data_exp('filt_stimulation')
+
+        tmp_stim = []
+        for stim in stimulation:
+            tmp = stimulation[stim][1]
+            tmp_stim.append(tmp)
+
+        data = np.concatenate((background,*tmp_stim),axis=1)
+
+        tmp_raster = []
+        for ch in range(data.shape[0]):
+            tmp = data[ch]
+            tmp = tmp[~np.isnan(tmp)]*0.01
+            tmp = tmp[(tmp>start) & (tmp<stop)]
+            tmp_raster.append(tmp)
+
+        fig,ax = plt.subplots()
+
+        ins_ax = ax.inset_axes([-0.03,0.1,1,1])
+        ins_ax.eventplot(tmp_raster,linewidths=1,colors='gray')
+
+        ax.spines[['top','bottom','left','right']].set_visible(False)
+        ax.tick_params(axis='both',which='both',labelbottom=False,labelleft=False,bottom=False,left=False,right=False)
+        ins_ax.spines[['top','bottom','right']].set_visible(False)
+
+        x_tick_pos = ins_ax.get_xticks()[0:2]
+
+        ins_ax_x_lim = ins_ax.get_xlim()
+
+        
+
+        ins_ax.tick_params(axis='both',which='both',labelbottom=False,bottom=False,right=False)
+        ins_ax.set_ylabel('# channel')
+        ins_ax.set_ylim(-5)
+        ins_ax.axhline(-5,0.05,((x_tick_pos[1]-x_tick_pos[0])/(ins_ax_x_lim[1]-ins_ax_x_lim[0]))+0.05,color='black')
+        ax.text(0.05,0.05,f'{(x_tick_pos[1]-x_tick_pos[0])/1000} s',size=15)
+        
+        plt.savefig(os.path.join(self.exp.results_path,f'raster_plot.pdf'),bbox_inches='tight')
+        plt.close()
+
+    
+    def calculate_isith(self,data:np.ndarray,just_plot=False):
         '''
         Wrapper function for ISI threshold calculation from spiking data.
         The ISIth is added in the params dictionary of the experiment.
@@ -379,7 +522,8 @@ class analyzer():
         merged_isi = self.__calculate_merged_ISI(data) # the ISI considering the data of all the channel is calculated
         isith = self.__calculate_ISIth(merged_isi) # ISI threshold expressed in millisecond
 
-        self.set_param_exp('isith',isith) # the ISI th is added as parameter in the params dictionary of exp istance
+        if just_plot == False:
+            self.set_param_exp('isith',isith) # the ISI th is added as parameter in the params dictionary of exp istance
 
 
 
@@ -434,7 +578,7 @@ class analyzer():
         
 
 
-    def calculate_ibith(self,data:dict):
+    def calculate_ibith(self,data:dict,just_plot:bool=False):
         '''
         Wrapper function for IBI histogram calculation from burst data of all electrodes. 
         From the IBI histogram, the integration time is calculated and added to the params dictionary under the key 'int_time' of the experiment under analysis
@@ -446,9 +590,9 @@ class analyzer():
 
         merged_IBI = self.__calculate_merged_IBI(data)
         ibith = self.__calculate_IBIth(merged_IBI)
-
-        self.set_param_exp('ibith',ibith)
-        self.set_param_exp('int_time',round(ibith,1))
+        if just_plot == False:
+            self.set_param_exp('ibith',ibith)
+            self.set_param_exp('int_time',round(ibith,1))
 
     def filter_spikes_data(self,data_name:str,afr_th: Union[int,float]):
         '''
@@ -729,6 +873,7 @@ class analyzer():
             display = RocCurveDisplay(fpr=fpr, tpr=tpr, roc_auc=roc_auc,
                                 estimator_name=name)
             display.plot()
+            plt.legend(fontsize=12)
 
             plt.savefig(path_to_save,bbox_inches='tight')
             plt.close()
@@ -952,7 +1097,7 @@ class analyzer():
 
         int_time = exp.get_param('int_time')
 
-        
+        experiment_type = exp.exp_type
 
         # create folder to store prediction data of all mearc models
         pred_folder_path = os.path.join(exp.results_path,'stimulus_prediction')
@@ -988,16 +1133,16 @@ class analyzer():
             if not os.path.exists(stim_channel_int_folder):
                 os.makedirs(stim_channel_int_folder)
 
-            if exp.exp_type =='exp':
-                best_channel_int_prediction =None # variable where to store the channel integral of the best prediction based on auc and xrmse
-                best_m_channel_int_prediction = None # same but for m
-                best_alpha_channel_int_prediction = None # same but for alpha
-                best_int_channel_int_prediction = None # same for intensity
-                best_overall_channel_int_prediction_auc = - math.inf # used to identify the best results
-                best_overall_channel_int_prediction_xrmse = math.inf
-                ch_wise_error_int_prediction = None
-                best_channel_int_bin_prediction = None # variable where to store the channel integral of the best prediction based on xrmse
-                best_cc_int_prediction = None # variable to store cc
+            #if exp.exp_type =='exp':
+            best_channel_int_prediction =None # variable where to store the channel integral of the best prediction based on auc and xrmse
+            best_m_channel_int_prediction = None # same but for m
+            best_alpha_channel_int_prediction = None # same but for alpha
+            best_int_channel_int_prediction = None # same for intensity
+            best_overall_channel_int_prediction_auc = - math.inf # used to identify the best results
+            best_overall_channel_int_prediction_xrmse = math.inf
+            ch_wise_error_int_prediction = None
+            best_channel_int_bin_prediction = None # variable where to store the channel integral of the best prediction based on xrmse
+            best_cc_int_prediction = None # variable to store cc
 
             tmp_pred = predicted_stim[stim]
 
@@ -1020,16 +1165,15 @@ class analyzer():
                 unfiltered_elec_list = exp.get_data('stimulation')[stim][2]
             else:
                 stim_elec_list = exp.get_data('stimulation')[stim][2]
+                unfiltered_elec_list = '' #!TODO change when filtering of simulation will be added
             
             all_m_ch_prediction_dict = {}
 
             all_m_dict = {}
-
-            if exp.exp_type == 'exp':
             
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,gt_integral,stim,'GT integral [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_gt_integral.pdf'))
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,binarized_gt,stim,'Binarized GT',os.path.join(stim_channel_int_folder,f'stim_{stim}_binarized_gt.pdf'),bin=True)
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,max_ground_truth_stim,stim,'GT response [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_gt_amplitude.pdf'))
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,gt_integral,stim,'GT integral [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_gt_integral.pdf'),exp_type=experiment_type)
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,binarized_gt,stim,'Binarized GT',os.path.join(stim_channel_int_folder,f'stim_{stim}_binarized_gt.pdf'),bin=True,exp_type=experiment_type)
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,max_ground_truth_stim,stim,'GT response [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_gt_amplitude.pdf'),exp_type=experiment_type)
 
             m_values = sorted(list(tmp_pred.keys()))
 
@@ -1247,7 +1391,7 @@ class analyzer():
 
                     binarized_gt_roc_2,max_amplitude_psth_roc_2,roc_curve_path = fix_roc(binarized_gt_tmp_2,max_amplitude_psth,alpha_value_specific_path,gt_thr=gt_thr)
                     
-                    auc = self._roc_curve(binarized_gt_roc_2,max_amplitude_psth_roc_2,f'm={m},{chr(945)}={alpha_val},intensity={best_intensity}',roc_curve_path)
+                    auc = self._roc_curve(binarized_gt_roc_2,max_amplitude_psth_roc_2,f'm={m},{chr(945)}={alpha_val},int={best_intensity}',roc_curve_path)
 
                     
                     heatmap_auc_xrmse['m'].append(m),heatmap_auc_xrmse['alpha'].append(alpha_val),heatmap_auc_xrmse['best_intensity'].append(best_intensity),heatmap_auc_xrmse['auc'].append(auc),heatmap_auc_xrmse['xrmse'].append(overall_error),heatmap_auc_xrmse['cc'].append(max_amplitude_cc)
@@ -1257,31 +1401,31 @@ class analyzer():
                     stims_final_auc_xrmse_csv['stim'].append(stim),stims_final_auc_xrmse_csv['m'].append(m),stims_final_auc_xrmse_csv['alpha'].append(alpha_val),stims_final_auc_xrmse_csv['cc'].append(max_amplitude_cc)
                     stims_final_auc_xrmse_csv['intensity'].append(best_intensity),stims_final_auc_xrmse_csv['xrmse'].append(overall_error),stims_final_auc_xrmse_csv['auc'].append(auc),stims_final_auc_xrmse_csv['tau'].append(overall_tau)
 
-                    if exp.exp_type == 'exp':
-                        fpr, tpr, ths = roc_curve(binarized_gt_roc_2, max_amplitude_psth_roc_2)
+                    
+                    fpr, tpr, ths = roc_curve(binarized_gt_roc_2, max_amplitude_psth_roc_2)
 
+                    
+                    selected_ths = find_best_threshold_response(fpr,tpr,ths)
+                    
+                    
+            
+                    binarized_max_amplitude_psth = np.where(max_amplitude_psth>=selected_ths,1,0)
+
+
+                    if overall_error < best_overall_channel_int_prediction_xrmse:
+                        #if auc >= best_overall_channel_int_prediction_auc:
                         
-                        selected_ths = find_best_threshold_response(fpr,tpr,ths)
-                        
-                       
-                
-                        binarized_max_amplitude_psth = np.where(max_amplitude_psth>=selected_ths,1,0)
 
-
-                        if overall_error < best_overall_channel_int_prediction_xrmse:
-                            #if auc >= best_overall_channel_int_prediction_auc:
-                            
-
-                                best_overall_channel_int_prediction_auc = auc
-                                best_overall_channel_int_prediction_xrmse = overall_error
-                                best_channel_int_prediction =best_intensity_integral # variable where to store the channel integral of the best prediction based on xrmse
-                                best_m_channel_int_prediction = m # same but for m
-                                best_alpha_channel_int_prediction = alpha_val # same but for alpha
-                                best_int_channel_int_prediction = best_intensity # same for intensity
-                                ch_wise_error_int_prediction = ch_wise_error
-                                best_channel_int_bin_prediction = binarized_max_amplitude_psth # variable where to store the channel integral of the best prediction based on xrmse
-                                best_cc_int_prediction = max_amplitude_psth_to_save
-                
+                            best_overall_channel_int_prediction_auc = auc
+                            best_overall_channel_int_prediction_xrmse = overall_error
+                            best_channel_int_prediction =best_intensity_integral # variable where to store the channel integral of the best prediction based on xrmse
+                            best_m_channel_int_prediction = m # same but for m
+                            best_alpha_channel_int_prediction = alpha_val # same but for alpha
+                            best_int_channel_int_prediction = best_intensity # same for intensity
+                            ch_wise_error_int_prediction = ch_wise_error
+                            best_channel_int_bin_prediction = binarized_max_amplitude_psth # variable where to store the channel integral of the best prediction based on xrmse
+                            best_cc_int_prediction = max_amplitude_psth_to_save
+            
 
                 #save best alpha for response
                 best_alpha_for_protocol_xrmse = math.inf
@@ -1364,21 +1508,21 @@ class analyzer():
                     plt.savefig(os.path.join(all_alpha_path,f'channel_{stim_elec_list[ch]}_m_{m}_all_alpha_prediction.pdf'),bbox_inches='tight')
                     plt.close()
             
-            if exp.exp_type =='exp':
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,best_channel_int_bin_prediction,stim,'Binarized response [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_binarized_prediction.pdf'),bin=True)
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,best_channel_int_prediction,stim,'Response integral [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_prediction_integral.pdf'))
-                                
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,ch_wise_error_int_prediction,stim,'$\\varepsilon$',os.path.join(stim_channel_int_folder,f'stim_{stim}_ch_wise_err_prediction.pdf'))
-                
-                error_binarized_gt_vs_pred = np.abs((best_channel_int_bin_prediction-binarized_gt)) 
+            
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,best_channel_int_bin_prediction,stim,'Binarized response [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_binarized_prediction.pdf'),bin=True,exp_type=experiment_type)
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,best_channel_int_prediction,stim,'Response integral [a.u.]',os.path.join(stim_channel_int_folder,f'stim_{stim}_prediction_integral.pdf'),exp_type=experiment_type)
+                            
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,ch_wise_error_int_prediction,stim,'$\\varepsilon$',os.path.join(stim_channel_int_folder,f'stim_{stim}_ch_wise_err_prediction.pdf'),exp_type=experiment_type)
+            
+            error_binarized_gt_vs_pred = np.abs((best_channel_int_bin_prediction-binarized_gt)) 
 
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,error_binarized_gt_vs_pred,stim,'',os.path.join(stim_channel_int_folder,f'stim_{stim}_binarized_prediction_error.pdf'),bin_err=True)
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,error_binarized_gt_vs_pred,stim,'',os.path.join(stim_channel_int_folder,f'stim_{stim}_binarized_prediction_error.pdf'),bin_err=True,exp_type=experiment_type)
 
-                plot_mea_map(unfiltered_elec_list,stim_elec_list,max_amplitude_psth_to_save,stim,'Predicted response [a.u]',os.path.join(stim_channel_int_folder,f'stim_{stim}_amplitude_prediction.pdf'))
+            plot_mea_map(unfiltered_elec_list,stim_elec_list,max_amplitude_psth_to_save,stim,'Predicted response [a.u]',os.path.join(stim_channel_int_folder,f'stim_{stim}_amplitude_prediction.pdf'),exp_type=experiment_type)
 
-                selected_m_alpha_best_int = pd.DataFrame({'m':[best_m_channel_int_prediction],'alpha':[best_alpha_channel_int_prediction],'int':[best_int_channel_int_prediction]})
+            selected_m_alpha_best_int = pd.DataFrame({'m':[best_m_channel_int_prediction],'alpha':[best_alpha_channel_int_prediction],'int':[best_int_channel_int_prediction]})
 
-                selected_m_alpha_best_int.to_csv(os.path.join(stim_channel_int_folder,'channel_map_selected_parameters.csv'),sep='\t')
+            selected_m_alpha_best_int.to_csv(os.path.join(stim_channel_int_folder,'channel_map_selected_parameters.csv'),sep='\t')
             #heatmaps
 
             
@@ -1709,10 +1853,12 @@ class analyzer():
         tmp_to_save.to_csv(os.path.join(self.exp.results_path,'mearc_validation_full.csv'),sep='\t')
         plt.close()
         tmp_to_save = tmp_to_save.pivot(index="m",columns='alpha',values=f'avg_{metric}')
+        fig,ax = plt.subplots(figsize=(5.7,4.7))
         sns.heatmap(tmp_to_save,cmap='coolwarm')
+        
         plt.xlabel(chr(945))
         plt.title('Validation loss')
-        plt.savefig(os.path.join(self.exp.results_path,f'{metric}_validation_results.pdf'))
+        plt.savefig(os.path.join(self.exp.results_path,f'{metric}_validation_results.pdf'),bbox_inches='tight')
         plt.close()
         
         for m in final_res:

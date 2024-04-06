@@ -3,7 +3,7 @@ from data_prep.exp import experiment
 from data_prep.analyzer import analyzer
 from mea_reservoir.lasso_node import lasso
 from mea_reservoir.mea_node import mea_res
-from data_prep.utils import save_pickle_file,adjust_font_dimension,open_pickle_file,check_if_file_exist
+from data_prep.utils import save_pickle_file,adjust_font_dimension,open_pickle_file,check_if_file_exist,plot_channel_prediction,plot_single_exp_cm_analysis
 import os
 import pickle
 import numpy as np
@@ -249,21 +249,113 @@ def debug(data_path,path):
 
 
 
-if __name__=='__main__':
+# if __name__=='__main__':
 
     
-    if not os.path.exists(INPUT_PATH):
-        raise IOError(f'{INPUT_PATH} does not exist')
+#     if not os.path.exists(INPUT_PATH):
+#         raise IOError(f'{INPUT_PATH} does not exist')
 
-    if not os.path.exists(OUTPUT_PATH):
-        os.makedirs(OUTPUT_PATH)
+#     if not os.path.exists(OUTPUT_PATH):
+#         os.makedirs(OUTPUT_PATH)
 
-    adjust_font_dimension()
+#     adjust_font_dimension()
     
-    run_for_multiple_exp(INPUT_PATH,OUTPUT_PATH)
-    #run_for_multiple_stim_only(INPUT_PATH)
+#     run_for_multiple_exp(INPUT_PATH,OUTPUT_PATH)
+#     #run_for_multiple_stim_only(INPUT_PATH)
 
 
 
 #debug('/home/penelope/Desktop/ilya/mearc_model/final_sim_to_run/60_sims/60_pop_stim_full_pto_2','/home/penelope/Desktop/ilya/mearc_model/all_sim_results/60_pop_stim_full_pto_2')
 
+
+#%%
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
+
+#%%
+fig,axs = plt.subplots(2,2)
+axs = axs.flatten()
+axs[2].secondary_yaxis(-0.5,ylim=10)
+axs[2].secondary_xaxis(-0.5,xlim=10)
+#axins.tick_params(left=False, right=True, labelleft=False, labelright=True)
+plt.show()
+
+# %%
+#cm = open_pickle_file('/home/giorgio/Desktop/fin_11_01/cm_analysis_results.pickle')
+# %%
+adjust_font_dimension(title_size=20,legend_size=25,label_size=18,x_ticks=15,y_ticks=15)
+
+exp = open_pickle_file('/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/analyzed_experiment.pickle') # loading exp pickle file
+
+exp.results_path = '/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/final'
+#exp.exp_path = '/home/giorgio/Desktop/60_pop_stim_full_inh__isol_pto_1'
+
+anl = analyzer(exp)
+
+mearc_characterized_dict = open_pickle_file('/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/characterized_mearc.pickle')
+
+predicted_stim = exp.get_data('predicted_psth')
+
+analyzed_stim_dict =exp.get_data('processed_stimulation')
+
+#anl.connectivity_matrix_analysis(mearc_characterized_dict,exp_type=exp.exp_type)
+
+anl.full_characterization_stim(predicted_stim,analyzed_stim_dict,overwrite=False)
+# %%
+
+a = '/home/giorgio/Desktop/fin_11_01'
+adjust_font_dimension(title_size=30,legend_size=60,label_size=40,x_ticks=20,y_ticks=18)
+
+plot_channel_prediction(os.path.join(a,'40628_26DIV','analyzed_experiment.pickle'),13,50,0.2,2.5,a+'/last/last/exp',sim=False)
+
+# %%
+a = '/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results'
+adjust_font_dimension(title_size=20,legend_size=25,label_size=18,x_ticks=15,y_ticks=15)
+exp = open_pickle_file(os.path.join(a,'analyzed_experiment.pickle'))
+# exp.results_path = a+'/val'
+# mea = open_pickle_file(os.path.join(a,'characterized_mearc.pickle'))
+
+# anl = analyzer(exp)
+
+# anl._find_best_mearc(mea)
+
+# %% ISI And IBI plot
+adjust_font_dimension(title_size=20,legend_size=25,label_size=18,x_ticks=15,y_ticks=15)
+
+exp = open_pickle_file('/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/analyzed_experiment.pickle')
+exp.results_path = '/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/final'
+
+anl = analyzer(exp)
+anl.calculate_isith(anl.retrieve_data_exp('background')[0] ,just_plot=True)
+
+burst_data = anl.retrieve_data_exp('burst') # retrieve burst data
+
+anl.calculate_ibith(burst_data,just_plot=True)
+#%% RASTER AND SINGLE POPULATION ISI PLOT
+#adjust_font_dimension(title_size=20,legend_size=25,label_size=18,x_ticks=15,y_ticks=15)
+adjust_font_dimension(title_size=20,legend_size=25,label_size=18,x_ticks=15,y_ticks=15)
+
+exp = open_pickle_file('/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/analyzed_experiment.pickle')
+exp.results_path = '/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/final'
+
+
+anl = analyzer(exp)
+anl.raster_plot(start=100000,stop=140000,filt=False)
+anl.plot_single_population_isi(36)
+
+
+# %%PLOT CM ANALYSIS
+adjust_font_dimension(title_size=20,legend_size=25,label_size=18,x_ticks=15,y_ticks=15)
+
+plot_single_exp_cm_analysis('/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/cm_analysis_results.pickle','/home/giorgio/Desktop/fin_11_01/60_pop_stim_full_inh_isol__pto_1_results/final/cm_analysis')
+
+# %%
+
+
+#%%
+from scipy.io import savemat
+#%%
+cms = open_pickle_file('/home/giorgio/Desktop/fin_11_01/40628_26DIV/cm_analysis/cm_analysis_results.pickle') # loading exp pickle file
+
+savemat(os.path.join('/home/giorgio/Desktop/fin_11_01/40628_26DIV','cm_50_02.mat'),cms[50][0.2])
+# %%
