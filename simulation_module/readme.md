@@ -91,8 +91,13 @@ The dictionary contains synapse parameters for the different types of synapses u
 
   ** Intra-population and inter-population weights and delays are drawn from uniform distributions. low and high parameters represent       those uniform distributions' lower and upper bounds (check numpy.random.uniform function)
 
+## MEA layout
+In the MEA layout folder, pickle files containing descriptions of the MEA electrodes' position and number can be added based on the desired experimental set-up.
+Tested and working just for MEA system MEA2100-Mini-Systems of multiChannel systems.
 
 ## Run simulations
+
+
 
 
 
