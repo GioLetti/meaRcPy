@@ -3,75 +3,101 @@
 The simulation module contains scripts and parameters files necessary to run the NEST simulation.\
 The spiking Neural Network has been designed to create a computational model of a neuronal culture
 reproducing the spiking and bursting behavior shown by in-vitro cultures measured with MEA systems.\
-In particular, being interested in network dynamics, a network of point-process neurons tries to replicate the dynamic shown by neuronal culture studied with the MEA system as closely as possible. 
+In particular, being interested in network dynamics, a network of point-process neurons tries to replicate the dynamic shown by neuronal culture studied with the MEA system. 
 
 ## Set up parameters files
 The four YAML files in the parameters file folder specify different parameters necessary for running the simulations.\
 Once loaded in Python the YAML files are formatted as a Python dictionary (or nested dictionary).
-Files already present serve as examples and the parameters can be directly modified.
+Files already present serve as examples and the parameters can be directly modified.\
+For all NEST parameters refer to NEST documentation (https://nest-simulator.readthedocs.io/en/v3.3/ref_material/pynest_apis.html)
 
-### - network_dict 
+### network_dict 
 The basic network unit is defined as **Population**. A Population is composed of a
-variable number of point-process neurons neuron num, which emulates a neuronal population close
+variable number of point-process neurons, which emulates a neuronal population close
 to an MEA electrode. The **network** is then composed by linking together different **Populations**
-The network_dict.yaml file is constituted by six entries:\
+The network_dict.yaml file is constituted by six entries:
 * neuron_model
-  + name: name of the NEST neuron model to be used
+  + name: name of the NEST neuron model to be used (izhikevich model has been used and tested, other models are not guaranteed to work)
   + params: parameters of the selected model
+* neuron_number: number of neuron composing the **Population**
+* population_number: number of **Population**
+* stimulated_population: number of **Population**
+* isolated_population: number of isolated **Population**, which will form a separate cluster not connected to other **Populations**
+* full_inhibitory: number of **Population** whose inter-population connections are all inhibitory
+
+### simulation_dict
+Parameters for the NEST kernel:
+* simulation_time: simulation time in ms
+* kernel_res: resolution of NEST kernel
+* seed: seed to use
+* threads_num: number of threads to use in NEST computation
+
+### device_dict
+The dictionary contains all parameters describing the NEST device used for stimulating and recording the activity of neurons in the simulation. 
+* noise_generator: noise generator parameters dictionary
+  + mean:  mean expressed in pA
+  + std: standard deviation expressed in pA
+* poisson_generator: poisson generator parameters dictionary
+  + rate: spikes rate expressed as spikes/sec
+* spike_recorder: None # spike recorder does not have any parameter
+* step_current_generator:
+  + background_time: expressed in ms. It represents the length of the simulation in which only background activity will be 
+    present
+  + stim_time: expressed in ms. It represents the total duration of each stimulation phase
+  + stim_num: number of stimulation in each stimulation phase
+  + stim_lenght: expressed in ms. It represents the duration of actual stimulation (repeated for stim_num times) during each 
+    stimulation phase 
+  + stim_amp: expressed in pA. 
+
+### synapse_dict
+The dictionary contains synapse parameters for the different types of synapses used in the simulation. In particular, for connecting devices (noise_generator, poisson_generator, step_current_generator, and spike_recorder) only the static_synapse model has been used. For intra-population and inter-population connections, static_synapse and ptsd_synapse models have been used.
+
+* noise_syn: noise generator synapse parameter
+  + static_synapse: synapse model name
+    + weight: synapse's weight
+    + delay: synapse's delay
+* poisson_syn: poisson generator synapse parameter
+  + static_synapse: synapse model name
+    + weight: synapse's weight
+    + delay: synapse's delay
+* stimulation_syn:  step current generator synapse parameter
+  + static_synapse: synapse model name
+    + weight: synapse's weight
+    + delay: synapse's delay
+* spike_recorder_syn: # spike recorder synapse parameter (these values must remain fixed)
+  + static_synapse: synapse model name
+    + weight: 1.0
+    + delay: 1.0
+* intra_population_syn:  intra-population synapse parameter
+  + static_synapse: synapse model name
+    + low_exc_weight_intra: 
+    + high_exc_weight_intra: 
+    + exc_proportion_intra: 
+    + low_inh_weight_intra: 
+    + high_inh_weight_intra: 
+    + low_delay_intra: 
+    + high_delay_intra: 
+* inter_population_syn:  inter-population synapse parameter
+  + static_synapse: synapse model name
+    + low_exc_weight_inter: 
+    + high_exc_weight_inter: 
+    + exc_proportion_inter: 
+    + low_inh_weight_inter: 
+    + high_inh_weight_inter: 
+    + low_delay_inter: 
+    + high_delay_inter: 
+    + rule: fixed_outdegree # NEST connection rule
+    + inter_conn_number: number of inter-population connection
+
+  ** Intra-population and inter-population weights and delays are drawn from uniform distributions. low and high parameters represent       those uniform distributions' lower and upper bounds (check numpy.random.uniform function)
 
 
-2. simulation_dict.yaml - NEST kernel parameters can be 
+## Run simulations
+
+
+
+  
 
 
 
 
-
-. The point-process neuron model adopted is the Izhikevich model, chosen for
-its computational efficiency and capability of recreating different spiking and bursting behaviors by
-changing its parameters. To recreate the spontaneous activity shown by neuronal culture, external
-(or background) inputs are generated by using two mechanisms:
-• Poisson generator, which simulates a neuron firing with Poisson statistics with dead time, result-
-ing in exponentially distributed interspike intervals. The rate parameter indicates the mean firing
-rate (spikes/s) of the generator. A Poisson generator is connected to each neuron composing a
-population, and each neuron receives a different spike train.
-• Noise generator, which injects a piecewise constant current with Gaussian distributed amplitude.
-I(t) = mean + std × Ni (10)
-where Ni are Gaussian random numbers with unit standard deviation. Each neuron in a popula-
-tion is connected to a Noise generator, receiving all different input currents. The mean parameter
-24
-describes the mean value of the noise current in pA, while the std parameter is the standard
-deviation.
-To avoid the network dynamic being mostly determined by the generators, both are parametrized
-to generate sub-threshold inputs when acting ’alone’, while being able to induce a sufficient depolariza-
-tion in the target neuron when operating together. Assuming that neurons nearby an MEA electrode
-are highly interconnected, inside a Population all neurons are connected to all neurons (all-to-all
-connection type) with no self-recurrence allowed. These connections are defined as Intra-population
-connections. Instead, connections among different populations are called Inter-population connections,
-and the outgoing parameter defines the number of outgoing connections from each neuron of popula-
-tion x to neurons of population y. Each connection, both neuron-neuron and generator-neuron type,
-is described by the weight parameter which indicates the amplitude (pA) of the post-synaptic current
-generated by a pre-synaptic event carried by the connection, while the delay parameter simulates the
-time necessary for the transmission of the signal between pre and post-synaptic neuron (expressed
-in ms). Based on the weight value, a connection can be excitatory (positive values) or inhibitory
-(negative values). Both weights and delays are drawn from uniform distributions, whit low and high
-ranges defined by high/low weight inter/intra parameters and high/low delay inter/intra parameters,
-respectively. In particular, the synapse model used in this work is called static synapse, because as
-the name suggests, in this type of synapse no plasticity mechanisms take place and so the weight
-does not change over the simulation time. Finally, the exc proportion inter and exc proportion intra
-parameters account for the desired proportion of excitatory/inhibitory connections of inter-population
-connection and intra-population connection, respectively.
-After defining the described parameters [Appendix], the user can set the connection among the
-different populations, and run the simulation for the specified simulation time. The exact network
-topology is saved, both intra- population connection and inter-population connection with all the
-respective parameters’ values. This allows to completely restore the very same network or reconstruct
-the connections by fixing only the weight or the delay parameters to study how the variation of a single
-parameter’s value influences the network’s dynamic. The output of the model is the spike times of each
-neuron of each population. All the spike times of neurons belonging to the same population are then
-merged and sorted based on spiking time, obtaining what resembles the activity recorded by a MEA
-electrode. Simulated data are analyzed using the same methodology and algorithms used to analyze
-the experimental recording are used, except for the spike detection algorithm. The fact that we do not
-need to apply a spike detection algorithm represents one of the first simplifications/assumptions of this
-modeling framework. In fact, to obtain the spike time from the raw MEA signal a spike detection step
-must be performed, which does not have 100% accuracy, meaning that some spikes are not identified
-due to algorithmic imprecision. Moreover, we are implicitly assuming of being able to register the
-exact spiking time of each AP from each neuron (perfect electrode assumption)
