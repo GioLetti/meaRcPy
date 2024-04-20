@@ -70,22 +70,22 @@ The dictionary contains synapse parameters for the different types of synapses u
     + delay: 1.0
 * intra_population_syn:  intra-population synapse parameter
   + static_synapse: synapse model name
-    + low_exc_weight_intra: 
-    + high_exc_weight_intra: 
-    + exc_proportion_intra: 
-    + low_inh_weight_intra: 
-    + high_inh_weight_intra: 
-    + low_delay_intra: 
-    + high_delay_intra: 
+    + low_exc_weight_intra: float
+    + high_exc_weight_intra: float
+    + exc_proportion_intra: float
+    + low_inh_weight_intra: float
+    + high_inh_weight_intra: float
+    + low_delay_intra: float
+    + high_delay_intra: float
 * inter_population_syn:  inter-population synapse parameter
   + static_synapse: synapse model name
-    + low_exc_weight_inter: 
-    + high_exc_weight_inter: 
-    + exc_proportion_inter: 
-    + low_inh_weight_inter: 
-    + high_inh_weight_inter: 
-    + low_delay_inter: 
-    + high_delay_inter: 
+    + low_exc_weight_inter: float
+    + high_exc_weight_inter: float
+    + exc_proportion_inter: float
+    + low_inh_weight_inter: float
+    + high_inh_weight_inter: float
+    + low_delay_inter: float
+    + high_delay_inter: float
     + rule: fixed_outdegree # NEST connection rule
     + inter_conn_number: number of inter-population connection
 
@@ -93,10 +93,13 @@ The dictionary contains synapse parameters for the different types of synapses u
 
 ## MEA layout
 In the MEA layout folder, pickle files containing descriptions of the MEA electrodes' position and number can be added based on the desired experimental set-up.
-Tested and working just for MEA system MEA2100-Mini-Systems of multiChannel systems.
+Currently tested and working just for MEA system MEA2100-Mini-Systems of multichannel systems.
 
 ## Run simulations
-
+Once the parameters files have been set the simulation can be run from the terminal as follow:
+```
+git add
+```
 
 
 
