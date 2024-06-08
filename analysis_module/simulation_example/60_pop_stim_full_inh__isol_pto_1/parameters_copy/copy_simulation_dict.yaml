@@ -1,0 +1,4 @@
+kernel_res: 0.01
+seed: 9978
+simulation_time: 300000
+threads_num: 20

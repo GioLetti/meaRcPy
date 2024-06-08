@@ -1,0 +1,15 @@
+full_inhibitory: 14
+isolated_population:
+- 20
+- 20
+- 20
+neuron_model:
+  name: izhikevich
+  params:
+    a: 0.02
+    b: 0.2
+    c: -65.0
+    d: 8.0
+neuron_number: 5
+population_number: 60
+stimulated_population: 3

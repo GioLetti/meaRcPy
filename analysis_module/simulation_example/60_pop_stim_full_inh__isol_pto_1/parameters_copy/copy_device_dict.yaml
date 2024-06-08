@@ -1,0 +1,12 @@
+noise_generator:
+  mean: 0.0
+  std: 2.0
+poisson_generator:
+  rate: 7.5
+spike_recorder: None
+step_current_generator:
+  background_time: 150000
+  stim_amp: 40
+  stim_lenght: 2
+  stim_num: 10
+  stim_time: 10000

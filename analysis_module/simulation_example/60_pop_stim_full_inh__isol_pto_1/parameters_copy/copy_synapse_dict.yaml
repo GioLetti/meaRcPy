@@ -1,0 +1,36 @@
+inter_population_syn:
+  static_synapse:
+    exc_proportion_inter: 0.8
+    high_delay_inter: 1
+    high_exc_weight_inter: 10.5
+    high_inh_weight_inter: -1
+    inter_conn_number: 3
+    low_delay_inter: 1
+    low_exc_weight_inter: 8.5
+    low_inh_weight_inter: -15
+    rule: fixed_outdegree
+intra_population_syn:
+  static_synapse:
+    exc_proportion_intra: 0.8
+    high_delay_intra: 1
+    high_exc_weight_intra: 8.5
+    high_inh_weight_intra: -1
+    low_delay_intra: 1
+    low_exc_weight_intra: 6.5
+    low_inh_weight_intra: -15
+noise_syn:
+  static_synapse:
+    delay: 0.1
+    weight: 1.0
+poisson_syn:
+  static_synapse:
+    delay: 0.1
+    weight: 11.5
+spike_recorder_syn:
+  static_synapse:
+    delay: 1.0
+    weight: 1.0
+stimulation_syn:
+  static_synapse:
+    delay: 0.1
+    weight: 1.0

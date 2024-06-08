@@ -154,7 +154,7 @@ def _lasso_initializer(seed:Union[None,int]=None, # random number generator
                     n_lambdas: int=100, # number of lambdas used to train the model
                     cv: Union[None,TimeSeriesSplit]=None, # cross-validation strategy splitting. It must be a timeseries cv splitter
                     tol: float = 1e-5, # tolerance for the lasso optimization
-                    fit_intercept: bool = True, # whether to calculate the intercept
+                    fit_intercept: bool = False, # whether to calculate the intercept
                     max_iter:int = 1000, # maximum number of iterations
                     n_jobs:Union[None,int]=None, # number of workers to use during cross-validation
                     **kwargs):

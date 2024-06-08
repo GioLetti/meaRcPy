@@ -527,7 +527,7 @@ class analyzer():
 
 
 
-    def calculate_burst(self,data:np.ndarray,ch_list:list,ABR_th:Union[float,int] = 1):
+    def calculate_burst(self,data:np.ndarray,ch_list:list,ABR_th:Union[float,int] = 0):
         '''
         Wrapper function for burst detection algorithm.
         The data regarding burst are saved in the data dictionary under the key 'burst' of the experiment under analysis.
@@ -881,13 +881,12 @@ class analyzer():
         return roc_auc
 
     def connectivity_matrix_analysis(self,
-                                    mearc_dicto:dict, # dictionary containing the meaRC model for which CM correlation should be calculated
-                                    cm_th:Union[int,float]=0.1, # Connectivity matrix threshold   
-                                    exp_type:str = 'sim',
-                                    exp_name:str = ''):
+                                    mearc_dicto:dict, # dictionary containing the meaRC model for which CM correlation should be calculated  
+                                    exp_type:str = 'sim'
+                                    ):
         
         '''
-        The function calculates the pearson correlation coefficient in case of simulation
+        The function calculates the AUC/pearson correlation coefficient in case of simulation
         '''
         # create folder to store cm data
         cm_folder_path = os.path.join(str(self.exp.results_path),'cm_analysis')
@@ -1007,6 +1006,7 @@ class analyzer():
 
         save_pickle_file(cm_results,os.path.join(cm_folder_path,'cm_analysis_results.pickle'))
         
+        return cm_results
 
     
     def stimulate_mearc(self,

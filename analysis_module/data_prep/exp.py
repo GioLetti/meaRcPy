@@ -6,7 +6,7 @@ import math
 from typing import Union
 from pathlib import Path
 from functools import partial
-
+import time
 # functions used in the __init__ of experiment class
 
 def _get_ch_label(file_name):
@@ -98,7 +98,7 @@ def _load_sim_or_exp(path):
 
 
 
-def _create_array_from_spikes(path: os.path) -> [np.ndarray,list]:
+def _create_array_from_spikes(path: os.path):
     '''
     The function combines the spikes data (each electrode has a tsv file) in a np.array of dimension (n_channel x fin_dim)
     where fin_dim is the highest number of spikes detected among all electrodes. Each entry of the tsv file is the spike timestamp.
@@ -276,8 +276,10 @@ class experiment():
         
         exp_name = self.exp_path.name
         
+        
+        timestr = time.strftime("%Y%m%d%H%M%S")
 
-        self.results_path = os.path.join(results_path,exp_name)
+        self.results_path = os.path.join(results_path,exp_name+'_'+timestr)
 
         if not os.path.exists(self.results_path):
             os.makedirs(self.results_path)

@@ -17,7 +17,7 @@ import copy
 import statsmodels.api as sm
 from scipy.stats import ttest_ind,linregress,kruskal
 from matplotlib.ticker import MultipleLocator,AutoMinorLocator,FixedLocator
-
+from scipy.io import savemat
 
 
 def adjust_font_dimension(legend_size=10,title_size=15,label_size=12,x_ticks=10,y_ticks=10):
@@ -38,6 +38,49 @@ def check_if_file_exist(path_to_check,message):
         raise FileNotFoundError(message)
 
 
+def export_cm_matrix(cm_analysis_data,m:int,a:float,output_path,ext='.npy'):
+    '''
+    function used for exporting the CM matrix of the specified MEArc model parametrized by a (alpha) and m parameters.
+    
+    Input
+        - cm_analysis_data: either the path (str) to the cm_analysis_results.pickle file or the direct data
+        - m: m parameter of MEArc model
+        - a: alpha parameter of MEArc model
+        - output_path: desired output path
+        - ext:  default = '.npy' the matrix will be saved as nunpy matrix. if '.mat' the matrix will be saved as mat file using savemat function from scipy
+
+    '''
+    if isinstance(cm_analysis_data,str):
+        cms = open_pickle_file(cm_analysis_data)
+
+    else:
+        cms = cm_analysis_data
+
+    m_values = list(cms.keys())
+
+    alpha_values = list(cms[m_values[0]].keys())
+
+    if m not in m_values:
+        raise ValueError(f'Desired m value not found. Available are: {m_values}')
+
+    if a not in alpha_values:
+        raise ValueError(f'Desired alpha value not found. Available are: {alpha_values}') 
+
+    cm = cms[m][a]['avg_cm']
+
+    if ext=='.npy':
+
+        np.save(os.path.join(output_path,f'avg_cm_{m}_{a}'+ext),cm)
+
+    elif ext=='.mat':
+        savemat(os.path.join(output_path,f'avg_cm_{m}_{a}'+ext),cm)
+
+    else:
+        raise ValueError('CM matrix can be saved as either as .npy or .mat file')
+
+
+    
+
 
 
 #%%
@@ -48,7 +91,7 @@ def save_pickle_file(object, # object to save
     '''
 
     with open(path, 'wb') as handle:
-        pickle.dump(object, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        pickle.dump(object, handle, protocol=4)
 
 
 def open_pickle_file(pickel_file_path:str
@@ -57,6 +100,7 @@ def open_pickle_file(pickel_file_path:str
     function open a pickle file
     '''
 
+    check_if_file_exist(pickel_file_path,f'file {pickel_file_path} does not exist')
     pkl_file = open(pickel_file_path,'rb')
     open_pickle = pickle.load(pkl_file)
 
@@ -428,14 +472,33 @@ def plot_single_exp_cm_analysis(path,output_path):
 
     
 
-def plot_channel_prediction(analyzed_exp_pickle_file_path,stim_protocol,m,alpha,intensity,output_path,sim=True):
+def plot_channel_prediction(analyzed_exp,stim_protocol,m,alpha,intensity,output_path):
+    '''
+    Plot all channel predictions.
 
-    
-    exp = open_pickle_file(analyzed_exp_pickle_file_path)
+    Input:
+        - analyzed_exp: either the experiment class instance where data and params are stored or the path to the pickle file
+        - stim_protocol: desired stim protocol for which channel prediction will be plotted
+        - m: desired m parameter of MEArc model (among the used for training)
+        - alpha: desired alpha parameter of MEArc model (among the used for training)
+        - intensity: intenisty value of the stimulation
+        - output_path: desired output path
+    '''
+
+
+
+    if isinstance(analyzed_exp,str):
+        exp = open_pickle_file(analyzed_exp)
+
+    else:
+        exp = analyzed_exp
+  
     int_time = exp.get_param('int_time')
     stim_elec_list = exp.get_data('stimulation')[stim_protocol][2]
 
-    if sim==True:
+    exp_type = exp.exp_type
+
+    if exp_type=='sim':
         analyzed_stim_dict =exp.get_data('processed_stimulation')
 
     else:
@@ -448,11 +511,25 @@ def plot_channel_prediction(analyzed_exp_pickle_file_path,stim_protocol,m,alpha,
 
 
     res = exp.get_data('predicted_psth')
+
+    available_stim_protocols = list(res.keys())
+    if stim_protocol not in available_stim_protocols:
+        raise ValueError(f'desired stim protocol not found. Available are {available_stim_protocols}')
+    available_m = list(res[available_stim_protocols[0]].keys())
+    if m not in available_m:
+        raise ValueError(f'desired m not found. Available are {available_m}')
+    available_a = list(res[available_stim_protocols[0]][available_m[0]].keys())
+    if alpha not in available_a:
+        raise ValueError(f'desired alpha not found. Available are {available_a}')
+    available_intensity = list(res[available_stim_protocols[0]][available_m[0]][available_a[0]].keys())
+    if intensity not in available_intensity:
+        raise ValueError(f'desired intensity not found. Available are {available_intensity}')
+
     res = res[stim_protocol][m][alpha][intensity]
     res_mean = res['mean']
     res_std = res['std']
 
-    if sim==True:
+    if exp_type=='sim':
         fig,axs = plt.subplots(12,5,sharex=True,sharey=True,figsize=(30,30),layout='constrained')
     
         axs = axs.flatten()
