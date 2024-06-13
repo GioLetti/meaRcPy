@@ -1,7 +1,7 @@
 noise_generator: # noise generator parameters dictionary
   mean: 0.0 # mean expressed in pA
   std: 3.0 # standard deviation expressed in pA
-poisson_generator: # poisson generator parameters dictionary
+poisson_generator: # poisson generator parameters dictionary (can be even sinusoidal_poisson_generator, check NEST documentation for parameters specification)
   rate: 5.0 # spikes rate expressed as spikes/sec
 spike_recorder: None # spike recorder does not have any parameter
 step_current_generator:
@@ -10,3 +10,14 @@ step_current_generator:
   stim_num: 10 # number of stimulation in each stimulation phase
   stim_lenght: 2 # expressed in ms. It represents the duration of actual stimulation (repeated for stim_num times) during each stimulation phase 
   stim_amp: 30 # expressed in pA. 
+
+
+
+
+#poisson_generator can be either poisson_generator (simpler version) or sinusoidal_poisson_generator. 
+#Check NEST documentation for explanations of available parameters. To set those parameters is enough to just add them as key: value pair 
+#Example:
+#       - to stop the activity of poisson generator at specific time point just add stop: 10000 in the poisson_generator parameters list
+#         In this way the poisson generators will stop to send spike at 10000 ms till end of simulation
+
+# The same concept for parameters apply for the noise_generator
