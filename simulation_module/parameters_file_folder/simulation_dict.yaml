@@ -2,6 +2,7 @@ simulation_time: 300000 # simulation time in ms
 kernel_res: 0.01 #resolution of NEST kernel
 seed: 597 # seed to use
 threads_num: 10 # number of threads to use in NEST computation
-
+poisson_to_one: False
 
 # seed: if None, a random seed will be generated. If an integer is pass that is going to be the seed
+# poisson_to_one, if set to True the poisson generator will be connected to just one neuron for each population. Check the readme for explanation.

@@ -35,6 +35,7 @@ class simulation:
         self.k_res = self.simulation['kernel_res'] # kernel resolution
         self.seed = self.simulation['seed'] # seed
         self.thr_num = self.simulation['threads_num'] # number of threads used for computation
+        self.pto = self.simulation['poisson_to_one'] # if poisson generators will be connected to just one cell for each population
 
         # Sampling frequency
         self.samp_freq = helper.time_to_frequency(self.k_res)
@@ -205,28 +206,15 @@ class MEA_model(simulation):
             else:
                 
                 if device == 'noise_generator':
+
+                    noise = nest.Create(device,self.populations_number,self.devices[device])
                     
-                    #noise = nest.Create(device,self.populations_number,self.devices[device],params={'start':100000})
-                    noise = nest.Create(device,self.populations_number,params={'std':0.5,'mean':0.,'start':0})
                     self.created_devices['noise_generator']=noise
                     
-                if device == 'poisson_generator':
+                if (device == 'poisson_generator' or device == 'sinusoidal_poisson_generator'):
                     
-                    #poisson = nest.Create(device,self.populations_number,self.devices[device])
-                    poisson = nest.Create('sinusoidal_poisson_generator',self.populations_number,params= 
-                                           [{'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            {'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            {'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            {'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            {'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            {'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            {'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            {'rate': 6.5,'phase':45,'amplitude':0.45,'frequency':1,'start':0,'stop':300000},
-                                            
-                                            ])
-
-                                                                                
-                                                                                
+                    poisson = nest.Create(device,self.populations_number,params= self.devices)
+                                      
                     self.created_devices['poisson_generator']=poisson
             
                 if device == 'spike_recorder':
@@ -309,6 +297,13 @@ class MEA_model(simulation):
             mu_plus = syn_parameters['mu_plus']
             mu_minus = syn_parameters['mu_minus']
             wmax= syn_parameters['Wmax']
+            low_exc_weight_intra = syn_parameters['low_exc_weight_intra']
+            high_exc_weight_intra = syn_parameters['high_exc_weight_intra']
+            exc_proportion_intra = syn_parameters['exc_proportion_intra']
+            low_inh_weight_intra = syn_parameters['low_inh_weight_intra']
+            high_inh_weight_intra = syn_parameters['high_inh_weight_intra']
+            low_delay_intra = syn_parameters['low_delay_intra']
+            high_delay_intra = syn_parameters['high_delay_intra']
         
         stim_counter=0 # counter used to retrieve the current step_current_generator if stimulated populations are present
         
@@ -320,11 +315,12 @@ class MEA_model(simulation):
                             'delay':np.random.uniform(low_delay_intra,high_delay_intra,size=(self.neuron_number,self.neuron_number)).round(1)}
                 #! intra-population connection 
                 nest.Connect(self.populations[pop],self.populations[pop],{'rule':'all_to_all','allow_autapses':False},syn_spec=intra_syn) # intra-population connection
-           
+                logging.info('Intra-population connections established')
+
             elif intra_syn_type=='stdp_synapse':
 
-                perc = 0.75
-                exc_syn_num = int(self.neuron_number * (self.neuron_number - 1) * perc)
+                
+                exc_syn_num = int(self.neuron_number * (self.neuron_number - 1) * exc_proportion_intra)
 
                 inh_syn_num = int(self.neuron_number * (self.neuron_number-1) - exc_syn_num)
 
@@ -334,7 +330,8 @@ class MEA_model(simulation):
                              'mu_plus':mu_plus,
                              'mu_minus':mu_minus,
                              'Wmax':wmax,
-                             'weight':np.reshape(np.random.uniform(9.5,11.5,exc_syn_num),(self.neuron_number,int(exc_syn_num/self.neuron_number)))}
+                             'weight':np.reshape(np.random.uniform(low_exc_weight_intra,high_exc_weight_intra,exc_syn_num),(self.neuron_number,int(exc_syn_num/self.neuron_number))),
+                             'delay': np.reshape(np.random.uniform(low_delay_intra,high_delay_intra,exc_syn_num),(self.neuron_number,int(exc_syn_num/self.neuron_number)))}
 
                 #! intra-population connection 
                 #nest.Connect(self.populations[pop],self.populations[pop],{'rule':'all_to_all','allow_autapses':False},syn_spec=intra_syn) # intra-population connection
@@ -346,15 +343,19 @@ class MEA_model(simulation):
                              'mu_plus':mu_plus,
                              'mu_minus':mu_minus,
                              'Wmax': - wmax,
-                             'weight':np.reshape(np.random.uniform(-12.5,-0.1,inh_syn_num),(self.neuron_number,int(inh_syn_num/self.neuron_number)))}
+                             'weight':np.reshape(np.random.uniform(low_inh_weight_intra,high_inh_weight_intra,inh_syn_num),(self.neuron_number,int(inh_syn_num/self.neuron_number))),
+                             'delay': np.reshape(np.random.uniform(low_delay_intra,high_delay_intra,inh_syn_num),(self.neuron_number,int(inh_syn_num/self.neuron_number)))}
                 nest.Connect(self.populations[pop],self.populations[pop],{'rule':'fixed_outdegree','outdegree':int(inh_syn_num/self.neuron_number),'allow_multapses':False,'allow_autapses':False},syn_spec=intra_syn_neg) # intra-population connection
-  
+                logging.info('Plastic Intra-population connections established')
 
            
             #! connection to devices
             nest.Connect(self.created_devices['noise_generator'][num],self.populations[pop],syn_spec={'synapse_model':'noise_syn'}) # connect  noise generator to pop
             
-            nest.Connect(self.created_devices['poisson_generator'][num],self.populations[pop][0],syn_spec={'synapse_model':'poisson_syn'}) # connect poisson generator to pop
+            if self.pto:
+                nest.Connect(self.created_devices['poisson_generator'][num],self.populations[pop][0],syn_spec={'synapse_model':'poisson_syn'}) # connect poisson generator to pop
+            else:
+                nest.Connect(self.created_devices['poisson_generator'][num],self.populations[pop],syn_spec={'synapse_model':'poisson_syn'}) # connect poisson generator to pop
             
             nest.Connect(self.populations[pop],self.created_devices['spike_recorder'][num],syn_spec={'synapse_model':'spike_recorder_syn'}) # connect pop to spike recorder
             
@@ -365,12 +366,12 @@ class MEA_model(simulation):
             if self.stimulated_pops != 0:
                 
                 if pop in self.stim_pops:
-                    print(f'CHECK POP STIM {pop} {stim_counter}')
+                    #print(f'CHECK POP STIM {pop} {stim_counter}')
                     nest.Connect(self.created_devices['step_current_generator'][stim_counter],self.populations[pop],syn_spec={'synapse_model':'stimulation_syn'})
                     helper.save_stimulation_protocol(self.data_folder_path,self.created_devices['step_current_generator'][stim_counter],pop,stim_counter)
                     stim_counter+=1
                     
-        logging.info('Intra-population connections established')
+        
         logging.info('Noise generator connections established')
         logging.info('Poisson generator connections established')
         logging.info('Spike recorder connections established')
@@ -397,7 +398,7 @@ class MEA_model(simulation):
             inter_conn_numb = syn_parameters_inter['inter_conn_number']
             
             helper.connection_matrix(self.populations,inter_conn_rule,self.neuron_number,inter_conn_numb,low_exc_weight_inter,high_exc_weight_inter,exc_proportion_inter,low_inh_weight_inter,high_inh_weight_inter,low_delay_inter,high_delay_inter,self.clusters,self.full_inh)
-        logging.info('Inter-population connections established')
+            logging.info('Inter-population connections established')
             
         
         if inter_syn_type=='stdp_synapse':
@@ -410,9 +411,18 @@ class MEA_model(simulation):
             wmax= syn_parameters_inter['Wmax']
             inter_conn_rule = syn_parameters_inter['rule']
             inter_conn_numb = syn_parameters_inter['inter_conn_number']
+            low_exc_weight_inter = syn_parameters_inter['low_exc_weight_inter']
+            high_exc_weight_inter = syn_parameters_inter['high_exc_weight_inter']
+            exc_proportion_inter = syn_parameters_inter['exc_proportion_inter']
+            low_inh_weight_inter = syn_parameters_inter['low_inh_weight_inter']
+            high_inh_weight_inter = syn_parameters_inter['high_inh_weight_inter']
+            low_delay_inter = syn_parameters_inter['low_delay_inter']
+            high_delay_inter = syn_parameters_inter['high_delay_inter']
+
+
             
             helper.connection_matrix_plastic(self.populations,inter_conn_rule,self.neuron_number,inter_conn_numb,tau,lambda_par,mu_plus,mu_minus,wmax,self.clusters,self.full_inh)
-
+            logging.info('Plastic Inter-population connections established')
         starting_connection = nest.GetConnections(synapse_model='inter_population_syn')
 
         return starting_connection

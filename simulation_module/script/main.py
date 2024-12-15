@@ -2,7 +2,7 @@ from parser import retrieve_parameters,retrieve_params_debug
 import mea_snn
 import copy
 
-#os.chdir('/home/giorgio/Desktop/progetto_nest/script')
+
 
 def main():
 

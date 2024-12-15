@@ -31,6 +31,7 @@ Parameters for the NEST kernel:
 * kernel_res: resolution of NEST kernel
 * seed: seed to use
 * threads_num: number of threads to use in NEST computation
+* poisson_to_one: if set to True, the poisson generator will be connected to just one neuron in each population. This is based on the idea of single-neuron driving the dynamic. Check references*
 
 ### device_dict
 The dictionary contains all parameters describing the NEST device used for stimulating and recording the activity of neurons in the simulation. 
@@ -102,9 +103,11 @@ git add
 ```
 
 
+## References
 
+* 1) Riquelme, Juan Luis, et al. "Single spikes drive sequential propagation and routing of activity in a cortical network." Elife 12 (2023): e79928.
+* 2) Hemberger, Mike, et al. "Reliable sequential activation of neural assemblies by single pyramidal cells in a three-layered cortex." Neuron 104.2 (2019): 353-369.
 
-  
 
 
 
