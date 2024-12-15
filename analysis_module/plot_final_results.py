@@ -1,5 +1,5 @@
 #%%
-from data_prep.utils import retrieve_cm_stim_data_to_plot,boxplot_stim,scatterplot_stim,plot_cm_analysis,box_plot_sim_analysis,mix_cm_stim_graph,final_results_table,adjust_font_dimension
+from data_prep.utils import retrieve_cm_stim_data_to_plot,boxplot_stim,scatterplot_stim,plot_cm_analysis,box_plot_sim_analysis,mix_cm_stim_graph,final_results_table,adjust_font_dimension,plot_inhibitory_analysis
 import argparse
 
 #%%
@@ -54,9 +54,7 @@ if __name__== '__main__':
 
     final_results_table(data_path+'stimulation_sum_up.csv',data_path+'cm_sum_up.csv',output_path,sim=type_flag)
 
-
+    plot_inhibitory_analysis(data_path+'inhibitory_cm_analysis_25_perc.csv',output_path)
 
 
 #adjust_font_dimension(title_size=25,legend_size=18,label_size=18,x_ticks=15,y_ticks=15)
-#box_plot_sim_analysis('/home/giorgio/Desktop/final_simulations_data_results/grafici_con_connect/cm_data_for_boxplot_with_cn.csv','/home/giorgio/Desktop/final_simulations_data_results/grafici_con_connect/')
-#plot_cm_analysis('/home/giorgio/Desktop/fin_11_01/sim_res_auc/cm_data_for_scatter.csv','/home/giorgio/Desktop/final_simulations_data_results/grafici_con_connect/')

@@ -1448,3 +1448,37 @@ def final_results_table(stim_sum_up_csv_path,conn_sum_up_csv_path,output_path,si
         df = pd.DataFrame(df)
         df.to_csv(os.path.join(output_path,'final_results_table_connectivity.csv'),sep='\t')
 
+
+def plot_inhibitory_analysis(path_to_inhibitory_results_df,output_path):
+
+
+    results_df = pd.read_csv(path_to_inhibitory_results_df,sep=',')
+            
+
+    results_df_rc = results_df[results_df['alg']=='RC']
+
+    results_df_rc_2 = results_df_rc.copy()
+    results_df_rc_2.pop_num = results_df_rc_2.pop_num.astype(int)
+    results_df_rc_3 = results_df_rc_2.sort_values(by='pop_num')
+    results_df_rc_3.pop_num = results_df_rc_3.pop_num.astype(str)
+
+
+    cat_pop = results_df_rc.pop_num.unique().astype(str)
+    color_map = dict(zip(cat_pop, ['tab:blue','tab:orange','tab:green','tab:red','tab:purple',]))
+    
+    fig,ax = plt.subplots()
+    sns.scatterplot(data=results_df_rc_3,x='perc_inh_gt',y='perc_inh_pred',hue='pop_num',ax=ax,palette=color_map)
+    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
+    ax.set_ylim(top=12)
+    ax.plot([0, 1], [0, 1], transform=ax.transAxes,c='black',linestyle='--')
+    ax.set_xlabel(f'inh. Pop. Ratio - Ground Truth %')
+    ax.set_ylabel(f'inh. Pop. Ratio - Predicted %')
+    plt.savefig(os.path.join(output_path,'scatter_inh_proportion.pdf'),bbox_inches='tight',dpi=300)
+    
+  
+    fig,ax = plt.subplots()
+    sns.boxenplot(data=results_df_rc_3,x="pop_num", y="inh_auc",palette=color_map)
+    ax.set_xlabel('number of populations')
+    ax.set_ylabel('AUC')
+    plt.savefig(os.path.join(output_path,'boxplot_inh_auc.svg'),bbox_inches='tight',dpi=300)
+    
