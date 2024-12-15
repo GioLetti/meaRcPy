@@ -993,39 +993,37 @@ def box_plot_sim_analysis(input_csv_for_box,
                           output_path):
     
     
-    final_df = pd.read_csv(input_csv_for_box,sep='\t')
+    final_df = pd.read_csv(input_csv_for_box,sep=',',index_col=0)
 
     final_df['algorithm'].replace('NormCorr','CC',inplace=True)
 
-    auc_rc = final_df[(final_df['algorithm']=='RC') & (final_df['metric']=='AUC')]['metric_value']
-    print(auc_rc)
+    auc_rc = np.array(final_df[(final_df['algorithm']=='RC') & (final_df['metric']=='AUC')]['metric_value'])
+    auc_cn = np.array(final_df[(final_df['algorithm']=='CN') & (final_df['metric']=='AUC')]['metric_value'])
     auc_cc = np.array(final_df[(final_df['algorithm']=='CC') & (final_df['metric']=='AUC')]['metric_value'])
     auc_TE = np.array(final_df[(final_df['algorithm']=='TE') & (final_df['metric']=='AUC')]['metric_value'])
 
     p_rc = np.array(final_df[(final_df['algorithm']=='RC') & (final_df['metric']=='Pearson')]['metric_value'])
     p_cc = np.array(final_df[(final_df['algorithm']=='CC') & (final_df['metric']=='Pearson')]['metric_value'])
     p_TE = np.array(final_df[(final_df['algorithm']=='TE') & (final_df['metric']=='Pearson')]['metric_value'])
+    p_cn = np.array(final_df[(final_df['algorithm']=='CN') & (final_df['metric']=='Pearson')]['metric_value'])
 
 
+    kruskal_test_auc = kruskal(auc_cc,auc_rc,auc_TE,auc_cn)
 
-    kruskal_test_auc = kruskal(auc_cc,auc_rc,auc_TE)
-
-    kruskal_test_p = kruskal(p_cc,p_rc,p_TE)
+    kruskal_test_p = kruskal(p_cc,p_rc,p_TE,p_cn)
 
     print('auc',kruskal_test_auc)
     print('pearson',kruskal_test_p)
 
 
 
+    pair_final_df = [[('AUC','RC'),('AUC','CC')],
+                     [('AUC','RC'),('AUC','TE')],
+                     [('AUC','RC'),('AUC','CN')],
 
-
-
-    pair_final_df = [[('RC','AUC'),('CC','AUC')],
-                     [('RC','AUC'),('TE','AUC')],
-                     
-                     
-                     [('RC','Pearson'),('CC','Pearson')],
-                     [('RC','Pearson'),('TE','Pearson')],
+                     [('Pearson','RC'),('Pearson','CC')],
+                     [('Pearson','RC'),('Pearson','TE')],
+                     [('Pearson','RC'),('Pearson','CN')]
                      ]
     
 
@@ -1034,10 +1032,10 @@ def box_plot_sim_analysis(input_csv_for_box,
     #sns.set_theme(style="ticks")
     plotting_parameters = {
     'data':    final_df,
-    'x':       'algorithm',
+    'x':       'metric',
     'y':       'metric_value',
-    'hue':     'metric',
-    'palette': ['b','r']
+    'hue':     'algorithm',
+    'palette': ['b','r','g','tab:orange']
     }
 
     with sns.plotting_context():
@@ -1055,7 +1053,7 @@ def box_plot_sim_analysis(input_csv_for_box,
         plt.gca().spines.left.set_bounds(-0.5, 1)
         plt.legend(bbox_to_anchor=(1.05, 1.0), loc='center left',title=None)
 
-        plt.savefig(os.path.join(output_path,'avg_auc_roc_alg_comparison.pdf'),bbox_inches="tight")
+        plt.savefig(os.path.join(output_path,'avg_auc_roc_alg_comparison_prova.pdf'),bbox_inches="tight")
         plt.close()
     
 
@@ -1066,7 +1064,7 @@ def box_plot_sim_analysis(input_csv_for_box,
     #plt.ylabel('AUC')
     #plt.show()
 
-    sns.boxplot(x='pop',y='metric_value',hue='algorithm',data=auc_df,palette=['b','r','g'])
+    sns.boxplot(x='pop',y='metric_value',hue='algorithm',data=auc_df,palette=['b','r','g','tab:orange'])
     sns.despine(offset=10)
     plt.xlabel('Number of populations')
     plt.ylabel('AUC')
@@ -1083,7 +1081,7 @@ def box_plot_sim_analysis(input_csv_for_box,
     #plt.show()
 
     pearson_df = final_df[final_df['metric']=='Pearson']
-    sns.boxplot(x='pop',y='metric_value',hue='algorithm',data=pearson_df,palette=['b','r','g'])
+    sns.boxplot(x='pop',y='metric_value',hue='algorithm',data=pearson_df,palette=['b','r','g','orange'])
     sns.despine(offset=10, trim=True)
     
     plt.xlabel('Number of populations')

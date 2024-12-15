@@ -18,7 +18,7 @@ from reservoirpy.node import Node
 from sklearn.linear_model import LassoCV
 from sklearn.model_selection import TimeSeriesSplit
 
-from joblib import parallel_backend
+from joblib import Parallel,delayed
 from profiler_utility import profile,print_stats
 #from ray.train.sklearn import SklearnTrainer
 #from sklearn.model_selection import GridSearchCV
@@ -81,7 +81,7 @@ class lasso(Node):
 
                 lasso_model = _lasso_initializer(seed=seed,**kwargs) # initialize the Lasso
                 
-                super(lasso, self).__init__(params={'lasso':lasso_model,'w_out':None,'bias':None},
+                super(lasso, self).__init__(params={'lasso':lasso_model,'w_out':None,'bias':None,'lambda_out':None},
                                 hypers={'seed':seed,
                                         'n_jobs':kwargs.get('n_jobs'),
                                         'eps':kwargs.get('eps'),
@@ -114,8 +114,10 @@ class lasso(Node):
             y = np.concatenate(y,axis=1) # y is a np matrix of the ground truth value, represented by the NB window expressed as spikes number. y as dimension n_ch x (NBs_number * NB_window_lenght)
 
             w_out = np.zeros((y.shape[0],x.shape[1])) # w_out has dimension n_ch x n_res 
+            lambda_out = np.zeros(y.shape[0]) # vector storing lambda values 
             if self.get_param('fit_intercept'):
                 bias = np.zeros(y.shape[0]) # biases
+
            
             
             for ch in range(y.shape[0]): # for each channel a lasso model is fitted
@@ -123,12 +125,25 @@ class lasso(Node):
                     fitted_lasso=lasso_model.fit(x[0:-1,:],y[ch,1:]) # y is staggered of one index compared to x 
                 
                     w_out[ch,:] = fitted_lasso.coef_
+                    lambda_out[ch]= fitted_lasso.alpha_
 
                     if self.get_param('fit_intercept'):
                         bias[ch]=fitted_lasso.intercept_
-            
+            #dim = y.shape[0]
+            #with Parallel(n_jobs=10) as parallel: # parallel computing using joblib
+            #    fitted_lassos = parallel(delayed(lasso_model.fit(x[0:-1,:],y[ch,1:])) for ch in range(dim))
+
+            #for ch,model in enumerate(fitted_lassos):
+            #    w_out[ch,:] = model.coef_
+            #    lambda_out[ch]= model.alpha_
+
+            #    if self.get_param('fit_intercept'):
+            #        bias[ch]=model.intercept_
+
+
             
             self.set_param('w_out',w_out)
+            self.set_param('lambda_out',lambda_out)
             if self.get_param('fit_intercept'):
                  self.set_param('bias',bias)
             #print_stats() 

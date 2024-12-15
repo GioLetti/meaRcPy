@@ -169,6 +169,8 @@ class meaRC(FrozenModel):
         lasso_node = self.get_node(self.hypers['learning_method']) # retrieve lasso node
         lasso_node.fit(ns_tr,self.tr) # performs lasso fit
         w_out = lasso_node.get_param('w_out')
+
+        self.results['tr_states']= ns_tr
         
         
     
@@ -183,10 +185,11 @@ class meaRC(FrozenModel):
 
         ns_val = np.concatenate(ns_val,axis=0) # concatenate the neuron states to obtain a single matrix
 
+        lasso_node = self.get_node(self.hypers['learning_method'])
+        #w_out = self.get_node(self.hypers['learning_method']).get_param('w_out') # output weight matrix
 
-        w_out = self.get_node(self.hypers['learning_method']).get_param('w_out') # output weight matrix
-
-        prediction = w_out @ ns_val.T # predicted spike activity
+        #prediction = w_out @ ns_val.T # predicted spike activity
+        prediction = lasso_node.forward(ns_val)  # predicted spike activity
         prediction +=  1e-16 # to avoid zero division
 
         val = np.concatenate(self.val,axis=1)

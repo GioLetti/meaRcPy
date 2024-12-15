@@ -2,6 +2,7 @@
 from data_prep.utils import retrieve_cm_stim_data_to_plot,boxplot_stim,scatterplot_stim,plot_cm_analysis,box_plot_sim_analysis,mix_cm_stim_graph,final_results_table,adjust_font_dimension
 import argparse
 
+#%%
 ################### For reviewers
 # To replicate the graphs in the paper it's enough to run two times this script from terminal, one with the 'sim' parameter set to True (for simulation data - default) 
 # and the second time with 'sim' set to False (for experimental data)
@@ -55,3 +56,7 @@ if __name__== '__main__':
 
 
 
+
+#adjust_font_dimension(title_size=25,legend_size=18,label_size=18,x_ticks=15,y_ticks=15)
+#box_plot_sim_analysis('/home/giorgio/Desktop/final_simulations_data_results/grafici_con_connect/cm_data_for_boxplot_with_cn.csv','/home/giorgio/Desktop/final_simulations_data_results/grafici_con_connect/')
+#plot_cm_analysis('/home/giorgio/Desktop/fin_11_01/sim_res_auc/cm_data_for_scatter.csv','/home/giorgio/Desktop/final_simulations_data_results/grafici_con_connect/')
