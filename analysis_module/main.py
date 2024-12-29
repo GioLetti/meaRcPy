@@ -10,13 +10,17 @@ import numpy as np
 from time import time
 import pandas as pd
 import shutil
+import sys
 
 #%%
 
+## The code below performs the analysis pipeline for data collection, either electrophysiological data or simulated data.
+## In particular to rerun the analysis over the data presented in the paper, the simulation and electrophysiological data can be put together 
+## in a desired folder. The full path to such directory must be provided as INPUT PATH.
+## The output path can be any directory where results will be stored.
 
-
-INPUT_PATH = '/home/penelope/Desktop/ilya/mearc_model/final_sim_to_run/final_sim'
-OUTPUT_PATH='/home/penelope/Desktop/ilya/mearc_model/all_sim_results'
+#INPUT_PATH = ''
+#OUTPUT_PATH=''
 
 
 
@@ -149,8 +153,13 @@ def run_for_multiple_exp(input_folder_path,output_folder_path):
 
 
 if __name__=='__main__':
+    if sys.argv[1]=='-h':
+        print(''' Run full analysis over a set of data. Provide as parameters the full path to the folder 
+        containing all data that must be analyzed and the output path where to store data'''
+    else:
+        _,INPUT_PATH,OUTPUT_PATH = sys.argv
+            
 
-    
     if not os.path.exists(INPUT_PATH):
         raise IOError(f'{INPUT_PATH} does not exist')
 
