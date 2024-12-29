@@ -13,6 +13,6 @@ In the **Simulation module** code to perform NEST simulation is provided. The**a
 \
 [1] M.-O. Gewaltig and M. Diesmann, “Nest (neural simulation tool),” Scholarpedia, vol. 2, no. 4, p. 1430, 2007.\
 [2] N. Trouvain, L. Pedrelli, T. T. Dinh, and X. Hinaut, “ReservoirPy: An efficient and user-friendly library to design
-    echo state networks,” in Artificial Neural Networks and Machine Learning – ICANN 2020, pp. 494–505, Springer International Publishing, 2020.
+    echo state networks,” in Artificial Neural Networks and Machine Learning – ICANN 2020, pp. 494–505, Springer International Publishing, 2020.\
 [3] Auslender, I., Letti, G., Heydari, Y., Zaccaria, C., & Pavesi, L. (2024). Decoding neuronal networks: A Reservoir Computing approach for predicting connectivity and         
     functionality. Neural Networks, 107058.
