@@ -5,6 +5,20 @@ The spiking Neural Network has been designed to create a computational model of 
 reproducing the spiking and bursting behavior shown by in-vitro cultures measured with MEA systems.\
 In particular, being interested in network dynamics, a network of point-process neurons tries to replicate the dynamic shown by neuronal culture studied with the MEA system. 
 
+## Install 
+To create the environment to run NEST simulation follow the steps below. Start by creating and activating a specific conda environment.
+
+``` conda create --name nest_env python=3.8.20 && conda activate nest_env ```
+
+Install NEST with conda
+
+``` conda install -c conda-forge nest-simulator=3.5 ```
+``` conda install ipython, ipykernel ```
+
+## Usage
+Follow the steps below to set up the parameters yaml file needed for running the simulations.
+The parameters file folder is contained in the simulation module of the GitHub repository.
+
 ## Set up parameters files
 The four YAML files in the parameters file folder specify different parameters necessary for running the simulations.\
 Once loaded in Python the YAML files are formatted as a Python dictionary (or nested dictionary).
@@ -97,9 +111,10 @@ In the MEA layout folder, pickle files containing descriptions of the MEA electr
 Currently tested and working just for MEA system MEA2100-Mini-Systems of multichannel systems.
 
 ## Run simulations
-Once the parameters files have been set the simulation can be run from the terminal as follow:
+Once the parameters files have been set, go into the script folder of the simulation_module folder. 
+The simulation can be run from the terminal as follow:
 ```
-git add
+python main.py output_dir_path mea_layout_name (example mea_60.pickle)
 ```
 
 
