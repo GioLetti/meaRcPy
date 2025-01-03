@@ -15,12 +15,7 @@ spike_recorder_syn: # spike recorder synapse parameter (these values must remain
     weight: 1.0
     delay: 1.0
 intra_population_syn: # intra population synapse parameter
-  stdp_synapse: 
-    tau_plus: 20
-    lambda: 0.1
-    mu_plus: 0.5
-    mu_minus: 0.5
-    Wmax: 20.
+  static_synapse: 
     low_exc_weight_intra: 6.5
     high_exc_weight_intra: .5
     exc_proportion_intra: 0.8
@@ -29,13 +24,8 @@ intra_population_syn: # intra population synapse parameter
     low_delay_intra: 1
     high_delay_intra: 1
 inter_population_syn: # inter population synapse parameter
-  stdp_synapse:
-    tau_plus: 20
-    lambda: 0.1
-    mu_plus: 0.5
-    mu_minus: 0.5
-    Wmax: 20.
-    rule: fixed_total_number
+  static_synapse:
+    rule: fixed_outdegree
     low_exc_weight_inter: 10.5
     high_exc_weight_inter: 12.5
     exc_proportion_inter: 0.8
@@ -43,3 +33,37 @@ inter_population_syn: # inter population synapse parameter
     high_inh_weight_inter: -1
     low_delay_inter: 1
     high_delay_inter: 1
+    inter_conn_number: 3
+
+#for plastic synapse
+
+#intra_population_syn: # intra population synapse parameter
+#  stdp_synapse: 
+#    tau_plus: 20
+#    lambda: 0.1
+#    mu_plus: 0.5
+#    mu_minus: 0.5
+#    Wmax: 20.
+#    low_exc_weight_intra: 6.5
+#    high_exc_weight_intra: .5
+#    exc_proportion_intra: 0.8
+#    low_inh_weight_intra: -15
+#    high_inh_weight_intra: -1
+#    low_delay_intra: 1
+#    high_delay_intra: 1
+#inter_population_syn: # inter population synapse parameter
+#  stdp_synapse:
+#    tau_plus: 20
+#    lambda: 0.1
+#    mu_plus: 0.5
+#    mu_minus: 0.5
+#    Wmax: 20.
+#    rule: fixed_total_number
+#    low_exc_weight_inter: 10.5
+#    high_exc_weight_inter: 12.5
+#    exc_proportion_inter: 0.8
+#    low_inh_weight_inter: -15
+#    high_inh_weight_inter: -1
+#    low_delay_inter: 1
+#    high_delay_inter: 1
+#    inter_conn_number: 3

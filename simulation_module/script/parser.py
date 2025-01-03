@@ -77,6 +77,7 @@ def retrieve_parameters():
     mea_channel_path = '../mea_layout'
     mea_channel_abs_path = os.path.abspath(mea_channel_path)
     mea_channel_abs_path = os.path.join(mea_channel_abs_path,mea_channel_layout)
+    print('mea chanel path',mea_channel_abs_path)
     check_layout(mea_channel_path,mea_channel_abs_path)
     
     # retrieve YAML files

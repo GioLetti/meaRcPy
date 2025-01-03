@@ -204,7 +204,7 @@ class MEA_model(simulation):
                 sys.exit(f'{device} is not available.')
                 
             else:
-                
+              
                 if device == 'noise_generator':
 
                     noise = nest.Create(device,self.populations_number,self.devices[device])
@@ -213,7 +213,7 @@ class MEA_model(simulation):
                     
                 if (device == 'poisson_generator' or device == 'sinusoidal_poisson_generator'):
                     
-                    poisson = nest.Create(device,self.populations_number,params= self.devices)
+                    poisson = nest.Create(device,self.populations_number,params= self.devices[device])
                                       
                     self.created_devices['poisson_generator']=poisson
             
@@ -310,7 +310,7 @@ class MEA_model(simulation):
         for num,pop in enumerate(list(self.populations.keys())):
             
             if intra_syn_type == 'static_synapse':
-                intra_syn = {'model':'intra_population_syn',
+                intra_syn = {'synapse_model':'intra_population_syn',
                             'weight':helper.weight_generator(self.neuron_number,self.neuron_number,low_exc_weight_intra,high_exc_weight_intra,exc_proportion_intra,low_inh_weight_intra,high_inh_weight_intra),
                             'delay':np.random.uniform(low_delay_intra,high_delay_intra,size=(self.neuron_number,self.neuron_number)).round(1)}
                 #! intra-population connection 

@@ -575,8 +575,8 @@ def connection_matrix_plastic(populations,inter_conn_rule,neuron_num,inter_conn,
                               
 
                     else:
-                        
-                        exc_syn_num = int(tot_syn_number* percentuale exc)
+                        percentuale_exc = 0.8
+                        exc_syn_num = int(tot_syn_number* percentuale_exc)
                         inh_syn_num = tot_syn_number - exc_syn_num
 
                         syn_neuron_inter_pos = {'synapse_model':'inter_population_syn',
