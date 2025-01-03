@@ -7,7 +7,7 @@ The Rc model has been developed on top of the ReservoirPy library [2].
 A complete description of the meaRcPy model can be found in the paper [3]:
 **Decoding neuronal networks: A Reservoir Computing approach for predicting connectivity and functionality**
 
-In the **Simulation module** code to perform NEST simulation is provided. The**analysis module** contains the code of the MeaRcPy model and to run the analysis over the electrophysiological and simulated data.
+In the **Simulation module** code to perform NEST simulation is provided. The **analysis module** contains the code of the MeaRcPy model and runs the analysis over the electrophysiological and simulated data.
 
 ### Ref:
 \
