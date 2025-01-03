@@ -12,7 +12,7 @@ To create the environment to run NEST simulation follow the steps below. Start b
 
 Install NEST with conda
 
-``` conda install -c conda-forge nest-simulator=3.5 ```
+``` conda install -c conda-forge nest-simulator=3.5 ```  
 ``` conda install ipython, ipykernel ```
 
 ## Usage
